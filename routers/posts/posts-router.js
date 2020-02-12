@@ -22,7 +22,6 @@ router.post('/', (req, res) => {
 router.post('/:id/comments', (req, res) => {
     const { id } = req.params;
     const comment = { ...req.body, post_id: Number(id)}
-    // console.log(comment);
     
         Posts.findById(id)
         .then(post => {
@@ -32,6 +31,7 @@ router.post('/:id/comments', (req, res) => {
                     res.status(400).json({ errorMessage: "Please provide text for the comment." });
                 }
                 else Posts.insertComment(comment)
+
                 .then(inserted => {
                     console.log('INSERTED ID:', inserted);
                     res.status(201).json(inserted);
@@ -88,6 +88,32 @@ router.get('/:id/comments', (req, res) => {
         console.log(err);
         res.status(500).json({ error: "The comments information could not be retrieved." })
     });
+})
+
+router.delete('/:id', (req, res) => {
+    const { id } = req.params;
+
+    Posts.findById(id).then(post => {
+        console.log('POST:', post);
+        if(!post[0]){
+            res.status(404).json({ message: "The post with the specified ID does not exist." });
+        }else {
+            Posts.remove(id).then(deleted => {
+                console.log('DELETED:', deleted);
+                res.sendStatus(200);
+            })
+            .catch(error => {
+                console.log(error);
+                res.status(500).json({ error: "The post could not be removed" });
+              });
+
+        }
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(404).json({ message: "The post with the specified ID does not exist." });
+    });
+
 })
 
 module.exports = router;

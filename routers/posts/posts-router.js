@@ -31,15 +31,14 @@ router.post('/:id/comments', (req, res) => {
                     res.status(400).json({ errorMessage: "Please provide text for the comment." });
                 }
                 else Posts.insertComment(comment)
-
-                .then(inserted => {
-                    console.log('INSERTED ID:', inserted);
-                    res.status(201).json(inserted);
-                })
-                .catch(err => {
-                    console.log(err);
-                    res.status(500).json({ error: "There was an error while saving the comment to the database" });
-                });
+                    .then(inserted => {
+                        console.log('INSERTED ID:', inserted);
+                        res.status(201).json(inserted);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        res.status(500).json({ error: "There was an error while saving the comment to the database" });
+                    });
             }
             else res.status(404).json({ message: "The post with the specified ID does not exist." });
         })
@@ -114,6 +113,31 @@ router.delete('/:id', (req, res) => {
         res.status(404).json({ message: "The post with the specified ID does not exist." });
     });
 
+})
+
+router.put('/:id', (req, res) => {
+    const { id } = req.params;
+    const changes = req.body;
+
+    Posts.findById(id).then(post => {
+        if(post[0]){
+            if(!changes.title || !changes.contents){
+                res.status(400).json({ errorMessage: "Please provide title and contents for the post." });
+            }
+            else 
+                Posts.update(id, changes).then(updated => {
+                    res.status(200).json(updated);
+                }).catch(err => {
+                    console.log(err);
+                    res.status(500).json({ error: "The post information could not be modified." });
+                });
+        }
+        else res.status(404).json({ message: "The post with the specified ID does not exist." });
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(404).json({ message: "The post with the specified ID does not exist." });
+    });
 })
 
 module.exports = router;
